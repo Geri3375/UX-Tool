@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Clarity | UX knowledge assistant",
-  description: "Private, evidence-based UX research assistance.",
+  title: "Clarity | UX literature search",
+  description: "Search a personal UX literature library by keyword and PDF page.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

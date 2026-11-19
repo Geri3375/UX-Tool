@@ -1,21 +1,25 @@
-# UX Knowledge Assistant
+# UX Literature Search
 
-A public, evidence-based UX research assistant foundation. The library reads directly from the public `UX Literature` Storage bucket, which remains the catalogue source of truth. Authentication has been removed by product-owner decision. Document ingestion, retrieval, citations, and OpenAI are not connected yet.
+A personal UX literature search application. The public Supabase Storage bucket `UX Literature` remains the source of truth for original files. A rebuildable page-text index in Postgres provides keyword search without OpenAI or another language model.
 
 ## Current milestone
 
 - Next.js App Router with React and TypeScript
 - Tailwind CSS design tokens and a responsive product shell
-- explicit visual separation for literature, AI interpretation, and evidence limitations
-- an interface preview that is clearly marked as illustrative
+- a focused PDF keyword-search interface with highlighted excerpts
+- direct source links that open the matching PDF page
 - an environment-variable contract with no secret values
-- a RAG architecture and prioritized delivery plan
+- an architecture record for the current search system and optional future extensions
 - baseline lint, type, unit-test, and production-build scripts
 - Supabase SSR clients without an application login gate
 - a versioned document, page, ingestion-job, private-storage, and RLS migration
 - database policy test definitions under `supabase/tests`
 - live document-library listing from the `UX Literature` bucket through a public, read-only Edge Function
 - direct public source links without duplicate catalogue rows in the application database
+- version-controlled full-text search schema with a GIN index
+- resumable PDF text extraction in 25-page Edge Function batches
+- private extracted text tables with no `anon` or `authenticated` grants
+- five fully indexed PDFs and one partially indexed PDF (999 searchable pages total)
 
 ## Local development
 
@@ -33,9 +37,15 @@ npm run check
 npm run build
 ```
 
+To discover new or changed PDFs and rebuild their page index:
+
+```bash
+npm run index:library
+```
+
 ## Environment
 
-Copy `.env.example` to `.env.local` only when integrations are implemented. Never commit `.env.local` or place `SUPABASE_SERVICE_ROLE_KEY` or `OPENAI_API_KEY` in a `NEXT_PUBLIC_` variable.
+Copy `.env.example` to `.env.local`. Never commit `.env.local`. The application needs only the Supabase project URL and publishable key; Supabase Edge Functions use their platform-provided server credential.
 
 Without the public Supabase variables, the application cannot load its library. With them configured, application routes are public and require no Supabase identity.
 
@@ -43,8 +53,8 @@ Without the public Supabase variables, the application cannot load its library. 
 
 See [`docs/rag-architecture.md`](docs/rag-architecture.md) for the ingestion, OCR, data, retrieval, authorization, and milestone plan.
 
-## Important limitation
+## Search behavior
 
-The visible answer and source are mock interface content. They are labeled as illustrative and must not be interpreted as retrieved evidence.
+Search uses PostgreSQL full-text search with the language-neutral `simple` configuration. It supports quoted phrases, `OR`, and excluded terms such as `-prototype`. Results contain a short highlighted passage and PDF page number; extracted full pages are never returned to the browser.
 
-The library is live, but its files are not yet extracted, chunked, embedded, or available to chat retrieval.
+One PDF (`Screen und Interface Design`) is currently indexed through PDF page 200 and is explicitly recorded as `partial` because the parser repeatedly fails beyond that point. OCR is not yet implemented for image-only pages. There is no AI-generated answer feature.

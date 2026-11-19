@@ -1,25 +1,50 @@
-# RAG architecture
+# Literature search architecture
 
 ## Status
 
-This document defines the target architecture and delivery sequence. The current milestone connects the existing public `UX Literature` Storage bucket to the document library. Storage remains the source of truth: a public, read-only Edge Function lists current objects with a server-only credential, and the app opens their public object URLs. No duplicate catalog records are created. Application authentication has been removed by product-owner decision. Extraction, ingestion workers, retrieval, citations, and model calls are not yet connected.
+The current product is a personal PDF search tool without AI-generated answers. The existing public `UX Literature` Storage bucket is the source of truth for original files. Postgres stores only a rebuildable search index: source identity, processing state, page text, checksums, and page numbers. Application authentication has been removed by product-owner decision.
 
 ## System boundaries
 
 ```text
 Browser
   -> Next.js application on Vercel
-     -> Supabase Auth and user-scoped Data API calls
-     -> trusted server routes for chat and signed source access
-     -> durable ingestion dispatcher
-        -> extraction and OCR worker
-        -> chunking and metadata normalization
-        -> OpenAI embedding API
-        -> Supabase Postgres and pgvector
-     -> OpenAI Responses API for grounded answer generation
+     -> /api/search validates the query
+        -> public search Edge Function
+           -> service-role-only Postgres RPC
+              -> GIN-indexed full-text search over library pages
+     -> public source PDF at the matching page
+
+Index command
+  -> public index Edge Function
+     -> discovers source PDFs in UX Literature
+     -> claims one pending source
+     -> extracts at most 25 pages per invocation
+     -> upserts page text and checksums
+     -> resumes until ready, partial, OCR-required, or failed
 ```
 
-The browser may use only the Supabase project URL and publishable key. Service-role credentials, OpenAI credentials, private storage access, ingestion controls, and cross-document retrieval remain server-side.
+The browser and Vercel use only the Supabase project URL and publishable key. Platform-provided service-role credentials exist only inside Supabase Edge Functions. Extracted page text tables have RLS enabled, no client policies, and no `anon` or `authenticated` table grants. Only short search excerpts cross the server boundary.
+
+## Implemented data model
+
+- `library_sources`: rebuildable metadata keyed by bucket and storage path, checksum, processing status, page count, and safe error detail
+- `library_pages`: extracted page text, PDF page number, optional printed page label, checksum, and generated `tsvector`
+- `library_pages_search_idx`: GIN index over the generated search vector
+- `search_library_pages`: service-role-only RPC using `websearch_to_tsquery`, `ts_rank_cd`, and bounded `ts_headline` excerpts
+
+Processing states are `pending`, `extracting`, `ready`, `ocr_required`, `partial`, and `failed`. The source object is never copied into Postgres. Re-running the indexer skips unchanged ready sources and upserts page identities, so interrupted runs do not create duplicates.
+
+## Current retrieval flow
+
+1. The Next.js route accepts queries between 2 and 200 characters.
+2. The search Edge Function calls the private RPC with a maximum of 24 results.
+3. PostgreSQL parses web-style syntax using the language-neutral `simple` dictionary.
+4. The GIN index selects matching pages and ranks them by cover density.
+5. `ts_headline` returns only a short marked excerpt.
+6. The UI renders marks without injecting HTML and links to `#page=<PDF page>` in the source file.
+
+This is lexical retrieval: exact words and their normalized tokens match, but semantic synonyms are not inferred.
 
 Long-running PDF processing must not execute inside a single browser request or depend on one short-lived Vercel function. The implementation should dispatch idempotent jobs to a durable worker or workflow service. The exact worker platform is a milestone decision because it affects recurring cost and deployment operations.
 
