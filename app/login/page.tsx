@@ -10,6 +10,7 @@ const messages: Record<string, string> = {
   invalid_email: "Enter a valid email address.",
   missing_code: "The sign-in link is incomplete. Request a new one.",
   invalid_link: "That sign-in link is invalid or expired.",
+  email_rate_limited: "Too many sign-in emails were requested. Wait up to one hour, then request one new link.",
   sign_in_failed: "Sign-in could not be started. Confirm that this user already exists.",
 };
 

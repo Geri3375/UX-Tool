@@ -26,6 +26,10 @@ export async function requestSignIn(formData: FormData) {
   });
 
   if (error) {
+    if (error.code === "over_email_send_rate_limit" || error.status === 429) {
+      redirect("/login?error=email_rate_limited");
+    }
+
     redirect("/login?error=sign_in_failed");
   }
 
