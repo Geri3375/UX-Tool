@@ -1,5 +1,6 @@
 import {
   BookOpenText,
+  ExternalLink,
   Library,
   Menu,
   MessageSquareText,
@@ -11,6 +12,7 @@ import {
 
 import { MockAnswer } from "@/components/mock-answer";
 import { PromptInput } from "@/components/prompt-input";
+import type { LibraryDocument } from "@/lib/library";
 
 const conversations = [
   "Choosing research methods",
@@ -18,7 +20,19 @@ const conversations = [
   "Navigation depth",
 ];
 
-export function AppShell() {
+type AppShellProps = {
+  documents: LibraryDocument[];
+};
+
+function formatFileSize(sizeBytes: number) {
+  if (sizeBytes < 1024 * 1024) {
+    return `${Math.max(1, Math.round(sizeBytes / 1024))} KB`;
+  }
+
+  return `${(sizeBytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+export function AppShell({ documents }: AppShellProps) {
   return (
     <div className="app-shell">
       <aside className="sidebar" aria-label="Primary navigation">
@@ -63,7 +77,10 @@ export function AppShell() {
           </button>
           <div>
             <p>UX knowledge assistant</p>
-            <span><BookOpenText aria-hidden="true" size={13} /> No library connected</span>
+            <span>
+              <BookOpenText aria-hidden="true" size={13} />
+              {documents.length} {documents.length === 1 ? "source" : "sources"} connected
+            </span>
           </div>
           <button className="topbar-action" type="button" aria-label="Search conversations">
             <Search aria-hidden="true" size={18} />
@@ -76,20 +93,41 @@ export function AppShell() {
             <div className="prompt-wrap"><PromptInput /></div>
           </div>
 
-          <aside className="source-panel" aria-label="Source details">
+          <aside className="source-panel" id="library" aria-label="Document library">
             <div className="source-panel-header">
               <div>
-                <p>Source inspection</p>
-                <span>Illustrative only</span>
+                <p>Document library</p>
+                <span>Supabase · UX Literature</span>
               </div>
               <button className="icon-button" type="button" aria-label="Close source panel">
                 <PanelRightClose aria-hidden="true" size={18} />
               </button>
             </div>
-            <div className="source-preview-empty">
-              <BookOpenText aria-hidden="true" size={22} strokeWidth={1.5} />
-              <h2>No source selected</h2>
-              <p>Verified excerpts and page context will appear here after document retrieval is connected.</p>
+            <div className="library-list">
+              {documents.length === 0 ? (
+                <div className="source-preview-empty">
+                  <BookOpenText aria-hidden="true" size={22} strokeWidth={1.5} />
+                  <h2>No documents found</h2>
+                  <p>The connected bucket does not contain imported library records yet.</p>
+                </div>
+              ) : documents.map((document) => (
+                <a
+                  className="library-document"
+                  href={document.publicUrl}
+                  key={document.id}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  <span className="library-document-icon" aria-hidden="true">
+                    <BookOpenText size={17} strokeWidth={1.6} />
+                  </span>
+                  <span className="library-document-copy">
+                    <strong>{document.title}</strong>
+                    <small>{formatFileSize(document.sizeBytes)} · Available in Storage</small>
+                  </span>
+                  <ExternalLink aria-hidden="true" size={14} strokeWidth={1.7} />
+                </a>
+              ))}
             </div>
           </aside>
         </div>

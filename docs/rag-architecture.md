@@ -2,7 +2,7 @@
 
 ## Status
 
-This document defines the target architecture and delivery sequence. The current milestone implements only the frontend foundation and an explicit mock answer. Authentication, ingestion, retrieval, citations, and model calls are not yet connected.
+This document defines the target architecture and delivery sequence. The current milestone connects authentication and the existing public `UX Literature` Storage bucket to the document library. Storage remains the source of truth: an authenticated Edge Function lists current objects with a server-only credential, and the app opens their public object URLs. No duplicate catalog records are created. Extraction, ingestion workers, retrieval, citations, and model calls are not yet connected.
 
 ## System boundaries
 
@@ -36,7 +36,8 @@ Long-running PDF processing must not execute inside a single browser request or 
 ### Supabase
 
 - Auth for identity and sessions
-- private Storage bucket for source PDFs and derived page assets
+- the existing public `UX Literature` bucket for current source files, as explicitly chosen for this personal deployment
+- a private bucket remains the recommended future location for derived page assets and any sensitive sources
 - Postgres for document, job, chunk, conversation, and citation metadata
 - pgvector for embeddings
 - Row Level Security and least-privilege grants on every exposed table
@@ -139,7 +140,8 @@ If evidence is insufficient, the answer must state that limitation and must not 
 - `authenticated` receives only operations required by the product and only within owned workspaces.
 - Ownership policies use stable membership rows and `auth.uid()`, not user-editable metadata.
 - Service-role access is limited to trusted server and worker environments.
-- Private PDFs and derived page assets never use public bucket URLs.
+- Current literature PDFs use public object URLs by product-owner choice; the application must clearly treat them as publicly downloadable.
+- Derived page assets, extracted text, chunks, and embeddings remain private and user-scoped.
 - Source previews use short-lived signed access after an authorization check.
 - Retrieval functions accept the caller identity from the database session or a trusted server boundary; a client-provided workspace ID is never sufficient authorization.
 - Views exposed to clients use `security_invoker = true` where supported.
@@ -179,8 +181,9 @@ RLS policy tests must cover allow and deny paths for select, insert, update, and
 1. **Frontend and repository foundation:** application shell, design tokens, explicit mock evidence states, environment contract, lint/type/test/build checks. Implemented in this milestone.
 2. **Personal ownership and auth:** connect Supabase SSR auth, protect application routes, and disable self-registration. Implemented locally; hosted auth configuration still requires verification.
 3. **Schema and RLS:** create versioned migrations for user-owned documents, pages, jobs, and private storage policies with database tests. Implemented locally; hosted migration application is pending verification.
-4. **Durable ingestion proof:** direct extraction, page metadata, checksum-based idempotency, processing UI, and one representative PDF fixture.
-5. **OCR fallback:** provider adapter, scanned-page detection, cost limits, retries, and evaluation fixtures.
-6. **Embedding and retrieval:** pinned model, chunks, vector RPC, metadata filters, hybrid evaluation set, and retrieval metrics.
-7. **Grounded answer streaming:** structured claims, server-side citation resolution, insufficient-evidence behavior, and prompt-injection tests.
-8. **Source inspection and hardening:** authorized preview, accessibility, rate limits, observability, recovery tooling, and end-to-end tests.
+4. **Public library connection:** list `UX Literature` through an authenticated server boundary, expose public object links in the library, and keep Storage as the only catalog source of truth. Implemented.
+5. **Durable ingestion proof:** direct extraction, page metadata, checksum-based idempotency, processing UI, and one representative PDF fixture.
+6. **OCR fallback:** provider adapter, scanned-page detection, cost limits, retries, and evaluation fixtures.
+7. **Embedding and retrieval:** pinned model, chunks, vector RPC, metadata filters, hybrid evaluation set, and retrieval metrics.
+8. **Grounded answer streaming:** structured claims, server-side citation resolution, insufficient-evidence behavior, and prompt-injection tests.
+9. **Source inspection and hardening:** authorized preview, accessibility, rate limits, observability, recovery tooling, and end-to-end tests.

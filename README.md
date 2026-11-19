@@ -1,6 +1,6 @@
 # UX Knowledge Assistant
 
-A private, evidence-based UX research assistant. Supabase SSR authentication and the personal-only schema are implemented locally. Document ingestion, retrieval, citations, and OpenAI are not connected yet.
+A private, evidence-based UX research assistant. Supabase SSR authentication and the personal-only schema are implemented. The authenticated library reads directly from the public `UX Literature` Storage bucket, which remains the catalogue source of truth. Document ingestion, retrieval, citations, and OpenAI are not connected yet.
 
 ## Current milestone
 
@@ -14,6 +14,8 @@ A private, evidence-based UX research assistant. Supabase SSR authentication and
 - personal-only Supabase SSR clients, protected-route proxy, and magic-link login
 - a versioned document, page, ingestion-job, private-storage, and RLS migration
 - database policy test definitions under `supabase/tests`
+- live document-library listing from the `UX Literature` bucket through an authenticated Edge Function
+- direct public source links without duplicate catalogue rows in the application database
 
 ## Local development
 
@@ -46,3 +48,5 @@ See [`docs/rag-architecture.md`](docs/rag-architecture.md) for the ingestion, OC
 ## Important limitation
 
 The visible answer and source are mock interface content. They are labeled as illustrative and must not be interpreted as retrieved evidence.
+
+The library is live, but its files are not yet extracted, chunked, embedded, or available to chat retrieval.
