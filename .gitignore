@@ -16,6 +16,7 @@
 # testing
 /coverage
 /.vitest
+/supabase/.temp
 
 # misc
 .DS_Store
