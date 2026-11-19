@@ -14,12 +14,14 @@ export async function requestSignIn(formData: FormData) {
 
   const headerStore = await headers();
   const origin = headerStore.get("origin");
+  const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
+  const callbackOrigin = configuredSiteUrl ?? origin;
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
       shouldCreateUser: false,
-      emailRedirectTo: origin ? `${origin}/auth/callback` : undefined,
+      emailRedirectTo: callbackOrigin ? `${callbackOrigin}/auth/callback` : undefined,
     },
   });
 
