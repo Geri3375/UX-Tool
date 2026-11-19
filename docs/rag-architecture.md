@@ -2,7 +2,7 @@
 
 ## Status
 
-This document defines the target architecture and delivery sequence. The current milestone connects authentication and the existing public `UX Literature` Storage bucket to the document library. Storage remains the source of truth: an authenticated Edge Function lists current objects with a server-only credential, and the app opens their public object URLs. No duplicate catalog records are created. Extraction, ingestion workers, retrieval, citations, and model calls are not yet connected.
+This document defines the target architecture and delivery sequence. The current milestone connects the existing public `UX Literature` Storage bucket to the document library. Storage remains the source of truth: a public, read-only Edge Function lists current objects with a server-only credential, and the app opens their public object URLs. No duplicate catalog records are created. Application authentication has been removed by product-owner decision. Extraction, ingestion workers, retrieval, citations, and model calls are not yet connected.
 
 ## System boundaries
 
@@ -181,7 +181,7 @@ RLS policy tests must cover allow and deny paths for select, insert, update, and
 1. **Frontend and repository foundation:** application shell, design tokens, explicit mock evidence states, environment contract, lint/type/test/build checks. Implemented in this milestone.
 2. **Personal ownership and auth:** connect Supabase SSR auth, protect application routes, and disable self-registration. Implemented locally; hosted auth configuration still requires verification.
 3. **Schema and RLS:** create versioned migrations for user-owned documents, pages, jobs, and private storage policies with database tests. Implemented locally; hosted migration application is pending verification.
-4. **Public library connection:** list `UX Literature` through an authenticated server boundary, expose public object links in the library, and keep Storage as the only catalog source of truth. Implemented.
+4. **Public library connection:** list `UX Literature` through a public, read-only server boundary, expose public object links in the library, and keep Storage as the only catalog source of truth. Implemented.
 5. **Durable ingestion proof:** direct extraction, page metadata, checksum-based idempotency, processing UI, and one representative PDF fixture.
 6. **OCR fallback:** provider adapter, scanned-page detection, cost limits, retries, and evaluation fixtures.
 7. **Embedding and retrieval:** pinned model, chunks, vector RPC, metadata filters, hybrid evaluation set, and retrieval metrics.

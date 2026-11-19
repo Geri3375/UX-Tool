@@ -1,6 +1,6 @@
 # UX Knowledge Assistant
 
-A private, evidence-based UX research assistant. Supabase SSR authentication and the personal-only schema are implemented. The authenticated library reads directly from the public `UX Literature` Storage bucket, which remains the catalogue source of truth. Document ingestion, retrieval, citations, and OpenAI are not connected yet.
+A public, evidence-based UX research assistant foundation. The library reads directly from the public `UX Literature` Storage bucket, which remains the catalogue source of truth. Authentication has been removed by product-owner decision. Document ingestion, retrieval, citations, and OpenAI are not connected yet.
 
 ## Current milestone
 
@@ -11,10 +11,10 @@ A private, evidence-based UX research assistant. Supabase SSR authentication and
 - an environment-variable contract with no secret values
 - a RAG architecture and prioritized delivery plan
 - baseline lint, type, unit-test, and production-build scripts
-- personal-only Supabase SSR clients, protected-route proxy, and magic-link login
+- Supabase SSR clients without an application login gate
 - a versioned document, page, ingestion-job, private-storage, and RLS migration
 - database policy test definitions under `supabase/tests`
-- live document-library listing from the `UX Literature` bucket through an authenticated Edge Function
+- live document-library listing from the `UX Literature` bucket through a public, read-only Edge Function
 - direct public source links without duplicate catalogue rows in the application database
 
 ## Local development
@@ -37,9 +37,7 @@ npm run build
 
 Copy `.env.example` to `.env.local` only when integrations are implemented. Never commit `.env.local` or place `SUPABASE_SERVICE_ROLE_KEY` or `OPENAI_API_KEY` in a `NEXT_PUBLIC_` variable.
 
-Without the public Supabase variables, the interface remains an unprotected local preview. With them configured, application routes require a verified Supabase identity.
-
-Magic-link sign-in uses `shouldCreateUser: false`. Create the sole approved user in Supabase Auth before testing login.
+Without the public Supabase variables, the application cannot load its library. With them configured, application routes are public and require no Supabase identity.
 
 ## Architecture
 
