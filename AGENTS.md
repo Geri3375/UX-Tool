@@ -219,3 +219,27 @@ A task is complete only when:
 - Failure states are handled.
 - Documentation is updated where necessary.
 - Remaining limitations are clearly reported.
+
+## Frontend and UI Stack
+
+Use the following frontend stack unless a task explicitly requires otherwise:
+
+- Next.js with the App Router
+- React and TypeScript
+- shadcn/ui for reusable UI components
+- Tailwind CSS for styling and design tokens
+- Lucide for interface icons
+- Vercel AI SDK for streaming AI interactions
+- Supabase for authentication, storage, and application data
+
+Prefer official shadcn/ui components and patterns before introducing another
+component library.
+
+The application should not look like an unmodified shadcn/ui template.
+Customize the components through the project's design tokens and composition
+patterns defined in `DESIGN.md`.
+
+Do not introduce another UI framework or component library without explaining
+why the existing stack cannot reasonably support the requirement.
+
+Before implementing or modifying user-facing interfaces, read `DESIGN.md`.
